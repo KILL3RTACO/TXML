@@ -1,6 +1,7 @@
 package com.kill3rtaco.txml;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Represents an XML document. An {@link XMLDocument} holds {@link XMLNodes
@@ -9,7 +10,7 @@ import java.io.File;
  */
 public class XMLDocument {
 	
-	//private ArrayList<XMLNode> _nodes;
+	private List<XMLNode>	_nodes;
 	
 	/**
 	 * Constructs an empty XMLDocument.
