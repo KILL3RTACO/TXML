@@ -25,7 +25,7 @@ public abstract class XMLContainer {
 	 * </pre> this returns true.
 	 * @return Whether this XMLContainer ends itself.
 	 */
-	public abstract boolean selfEnding();
+	public abstract boolean isSelfEnding();
 	
 	/**
 	 * Add an {@link XMLNode} to this container. This yields the same result as
@@ -33,6 +33,7 @@ public abstract class XMLContainer {
 	 * addNode(new XMLNode(name)) </pre>
 	 * @param name The name of the new XMLNode to add.
 	 * @return The node added
+	 * @throws TXMLException If this container is self-ending or something else goes wrong
 	 */
 	public XMLNode addNode(String name) {
 		return addNode(new XMLNode(name));
@@ -45,6 +46,7 @@ public abstract class XMLContainer {
 	 * @param name The name of the new XMLNode to add.
 	 * @param attributes The attributes of the new XMLNode
 	 * @return The node added
+	 * @throws TXMLException If this container is self-ending or something else goes wrong
 	 */
 	public XMLNode addNode(String name, Map<String, String> attributes) {
 		return addNode(new XMLNode(name, attributes));
@@ -54,10 +56,10 @@ public abstract class XMLContainer {
 	 * Add an {@link XMLNode} to this container.
 	 * @param node The node to add.
 	 * @return The node added.
-	 * @throws TXMLException If this container is self-ending
+	 * @throws TXMLException If this container is self-ending or something else goes wrong
 	 */
 	public XMLNode addNode(XMLNode node) {
-		if(selfEnding()) {
+		if(isSelfEnding()) {
 			throw new TXMLException("Cannot add nodes to self-ending nodes");
 		}
 		_nodes.add(node);
@@ -68,7 +70,7 @@ public abstract class XMLContainer {
 	 * Get a list of top-level nodes in this conatiner.
 	 * @return The nodes in this container.
 	 */
-	public List<XMLNode> getNodes() {
+	public List<XMLNode> nodes() {
 		return _nodes;
 	}
 	
@@ -118,7 +120,7 @@ public abstract class XMLContainer {
 		List<XMLNode> list = new ArrayList<XMLNode>();
 		for(XMLNode n : _nodes) {
 			for(String s : names) {
-				if(n.getName().equals(s)) {
+				if(n.name().equals(s)) {
 					list.add(n);
 					break;
 				}

@@ -16,11 +16,13 @@ public class XMLNode extends XMLContainer {
 	private String			_name;
 	private AttributeMap	_attributes;
 	private boolean			_selfEnding	= false;
+	private String			_text;
 	
 	/**
 	 * Creates a new {@link XMLNode}
 	 * @param name The name of the node. For instance, in the XMLNode representing {@code <node bleep="bloop"/>},
 	 * the name would be 'node'
+	 * @throws TXMLException If the given value for {@code name} is null, empty, or has spaces
 	 */
 	public XMLNode(String name) {
 		this(name, new HashMap<String, String>());
@@ -31,7 +33,7 @@ public class XMLNode extends XMLContainer {
 	 * @param name The name of the node. For instance, in the XMLNode representing {@code <node bleep="bloop"/>},
 	 * the name would be 'node'
 	 * @param attributes A map of attributes for the node, cannot be null
-	 * @throws IllegalArgumentException If the given variable for {@code attributes} is null
+	 * @throws TXMLException If the given value for {@code name} is null, empty, or has spaces
 	 */
 	public XMLNode(String name, Map<String, String> attributes) {
 		this(name, attributes, new ArrayList<XMLNode>());
@@ -40,19 +42,37 @@ public class XMLNode extends XMLContainer {
 	/**
 	 * Creates a new {@link XMLNode}. 
 	 * @param name The name of the node. For instance, in the XMLNode representing {@code <node bleep="bloop"/>},
-	 * the name would be 'node'
+	 * the name would be 'node'. Cannot be null or empty
 	 * @param attributes A map of attributes for the node, cannot be null
 	 * @param nodes A list of nodes contained within this node
-	 * @throws IllegalArgumentException If the given variable for {@code attributes} is null
+	 * @throws TXMLException If the given value for {@code name} is null, empty, or has spaces
 	 */
 	public XMLNode(String name, Map<String, String> attributes, List<XMLNode> nodes) {
 		super();
-		if(attributes == null) {
-			throw new IllegalArgumentException("attributes variable cannot be null");
+		if(name == null || name.isEmpty()) {
+			throw new TXMLException("name cannot be null or empty");
+		} else if(name.contains(" ")) {
+			throw new TXMLException("name cannot have spaces");
 		}
 		_name = name;
-		_attributes = new AttributeMap(attributes);
-		_nodes = nodes;
+		if(attributes == null) {
+			_attributes = new AttributeMap();
+		} else {
+			_attributes = new AttributeMap(attributes);
+		}
+		if(nodes == null) {
+			_nodes = new ArrayList<XMLNode>();
+		} else {
+			_nodes = nodes;
+		}
+		_text = "";
+	}
+	
+	public XMLNode addNode(XMLNode node) {
+		if(hasText()) {
+			throw new TXMLException("Can only add nodes if the node does not contain any text");
+		}
+		return super.addNode(node);
 	}
 	
 	/**
@@ -60,7 +80,7 @@ public class XMLNode extends XMLContainer {
 	 * name would be 'node'
 	 * @return the name of this node.
 	 */
-	public String getName() {
+	public String name() {
 		return _name;
 	}
 	
@@ -68,8 +88,29 @@ public class XMLNode extends XMLContainer {
 	 * Get a map of all the attributes for this node.
 	 * @return This nodes attributes
 	 */
-	public AttributeMap getAttributes() {
+	public AttributeMap attributes() {
 		return _attributes;
+	}
+	
+	public String text() {
+		return _text;
+	}
+	
+	public XMLNode setText(String text) {
+		if(!isEmpty()) {
+			throw new TXMLException("Can only set text of any empty node");
+		} else if(isSelfEnding()) {
+			throw new TXMLException("Can only set text of a node that is not self-ending");
+		}
+		if(text == null) {
+			text = "";
+		}
+		_text = text;
+		return this;
+	}
+	
+	public boolean hasText() {
+		return !_text.isEmpty();
 	}
 	
 	/**
@@ -181,7 +222,7 @@ public class XMLNode extends XMLContainer {
 	}
 	
 	@Override
-	public boolean selfEnding() {
+	public boolean isSelfEnding() {
 		return _selfEnding;
 	}
 	
@@ -197,25 +238,30 @@ public class XMLNode extends XMLContainer {
 		if(indentFactor < 0) {
 			indentFactor = 0;
 		}
-//		System.out.println("1");
-		String spaces = "";
-		boolean se = selfEnding(), addNewLines = indentFactor > 0;
-		for(int i = 0; i < indent * indentFactor; i++) {
-			spaces += " ";
-		}
-		String attrs = "";
+		boolean se = isSelfEnding(), addNewLines = indentFactor > 0;
+		String attrs = "", nl = (addNewLines ? "\n" : ""), spaces = getSpaces(indent, indentFactor);
 		for(String s : _attributes.getKeys()) {
 			attrs += s + "=\"" + _attributes.get(s) + "\" ";
 		}
-		String str = spaces + "<" + (_name + " " + attrs).trim() + (se ? "/" : "") + ">" + (addNewLines ? "\n" : "");
+		String str = spaces + "<" + (_name + " " + attrs).trim() + (se ? "/" : "") + ">" + (hasText() ? "" : nl);
+		if(hasText()) {
+			return str + _text + "</" + _name + ">";
+		}
 		for(XMLNode n : _nodes) {
-//			System.out.println("2");
-			str += spaces + n.toString(++indent, indentFactor) + (addNewLines ? "\n" : "");
+			str += n.toString(++indent, indentFactor) + nl;
 		}
 		if(!se) {
 			str += spaces + "</" + _name + ">";
 		}
 		return str;
+	}
+	
+	private String getSpaces(int indent, int indentFactor) {
+		String spaces = "";
+		for(int i = 0; i < indent * indentFactor; i++) {
+			spaces += " ";
+		}
+		return spaces;
 	}
 	
 }

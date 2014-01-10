@@ -26,7 +26,7 @@ public class XMLDocument extends XMLContainer {
 	}
 	
 	@Override
-	public boolean selfEnding() {
+	public boolean isSelfEnding() {
 		return false;
 	}
 	
