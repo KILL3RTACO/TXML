@@ -235,6 +235,7 @@ public class TXML {
 						if(x.nextToken() != TXML.GT) {
 							throw x.syntaxError("Misshaped tag");
 						}
+						newNode.setSelfEnding(true);
 //						if(ja == null) {
 //							if(arrayForm) {
 //								return newja;
@@ -242,7 +243,9 @@ public class TXML {
 //								return newjo;
 //							}
 //						}
-						return newNode.setSelfEnding(true);
+						if(node == null) {
+							return newNode;
+						}
 						
 // Content, between <...> and </...>
 						
@@ -296,11 +299,5 @@ public class TXML {
 	
 	public static List<XMLNode> parseXML(Reader source) {
 		return parseXML(new XMLTokener(source));
-	}
-	
-	public static void main(String[] args) {
-		String xml = "<rawr bleep='bloop' bob='joe'>text</rawr><boobs/><mumbo><jumbo></jumbo></mumbo>";
-		System.out.println(xml);
-		System.out.println(new XMLDocument(xml).toString());
 	}
 }
