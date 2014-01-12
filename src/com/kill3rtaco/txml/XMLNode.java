@@ -13,16 +13,16 @@ import java.util.Map;
  */
 public class XMLNode extends XMLContainer {
 	
-	private String			_name;
-	private AttributeMap	_attributes;
-	private boolean			_selfEnding	= false;
-	private String			_text;
+	protected String		_name;
+	protected AttributeMap	_attributes;
+	protected boolean		_selfEnding	= false;
+	protected String		_text;
 	
 	/**
 	 * Creates a new {@link XMLNode}
 	 * @param name The name of the node. For instance, in the XMLNode representing {@code <node bleep="bloop"/>},
 	 * the name would be 'node'
-	 * @throws TXMLException If the given value for {@code name} is null, empty, or has spaces
+	 * @throws TXMLException If the given name is invalid for any reason
 	 */
 	public XMLNode(String name) {
 		this(name, new HashMap<String, String>());
@@ -33,7 +33,7 @@ public class XMLNode extends XMLContainer {
 	 * @param name The name of the node. For instance, in the XMLNode representing {@code <node bleep="bloop"/>},
 	 * the name would be 'node'
 	 * @param attributes A map of attributes for the node, cannot be null
-	 * @throws TXMLException If the given value for {@code name} is null, empty, or has spaces
+	 * @throws TXMLException If the given name is invalid for any reason
 	 */
 	public XMLNode(String name, Map<String, String> attributes) {
 		this(name, attributes, new ArrayList<XMLNode>());
@@ -45,16 +45,11 @@ public class XMLNode extends XMLContainer {
 	 * the name would be 'node'. Cannot be null or empty
 	 * @param attributes A map of attributes for the node, cannot be null
 	 * @param nodes A list of nodes contained within this node
-	 * @throws TXMLException If the given value for {@code name} is null, empty, or has spaces
+	 * @throws TXMLException If the given name is invalid for any reason
 	 */
 	public XMLNode(String name, Map<String, String> attributes, List<XMLNode> nodes) {
 		super();
-		if(name == null || name.isEmpty()) {
-			throw new TXMLException("name cannot be null or empty");
-		} else if(name.contains(" ")) {
-			throw new TXMLException("name cannot have spaces");
-		}
-		_name = name;
+		setName(name);
 		if(attributes == null) {
 			_attributes = new AttributeMap();
 		} else {
@@ -161,8 +156,21 @@ public class XMLNode extends XMLContainer {
 	 * Set the name of this node.
 	 * @param name The new name
 	 * @return this
+	 * @throws TXMLException If the given name is invalid for any reason
 	 */
 	public XMLNode setName(String name) {
+		if(name == null || name.isEmpty()) {
+			throw new TXMLException("Names of nodes cannot be null or empty");
+		} else if(name.matches("[0-9" + TXML.PUNC + "](.+)?")) {
+			throw new TXMLException("Name '" + name + "'is invalid,"
+					+ " names of nodes cannot start with numbers or puncuation characters");
+		} else if(name.toString().toUpperCase().startsWith("XML")) {
+			throw new TXMLException("Name '" + name + "'is invalid,"
+					+ " names of nodes cannot start with the letters 'xml'");
+		} else if(name.contains(" ")) {
+			throw new TXMLException("Name '" + name + "'is invalid,"
+					+ " names of nodes cannot contain spaces");
+		}
 		_name = name;
 		return this;
 	}
@@ -234,16 +242,21 @@ public class XMLNode extends XMLContainer {
 		return toString(0, indentFactor);
 	}
 	
-	private String toString(int indent, int indentFactor) {
+	public String toString(int indent, int indentFactor) {
 		if(indentFactor < 0) {
 			indentFactor = 0;
 		}
 		boolean se = isSelfEnding(), addNewLines = indentFactor > 0;
-		String attrs = "", nl = (addNewLines ? "\n" : ""), spaces = getSpaces(indent, indentFactor);
+		String attrs = "", nl = (addNewLines ? "\n" : ""), spaces = TXML.getSpaces(indent, indentFactor);
 		for(String s : _attributes.getKeys()) {
 			attrs += s + "=\"" + _attributes.get(s) + "\" ";
 		}
-		String str = spaces + "<" + (_name + " " + attrs).trim() + (se ? "/" : "") + ">" + (hasText() ? "" : nl);
+		String str = spaces + "<" + (_name + " " + attrs).trim() + (se ? "/" : "") + ">";
+		if(!se) {
+			if(!hasText()) {
+				str += nl;
+			}
+		}
 		if(hasText()) {
 			return str + _text + "</" + _name + ">";
 		}
@@ -254,14 +267,6 @@ public class XMLNode extends XMLContainer {
 			str += spaces + "</" + _name + ">";
 		}
 		return str;
-	}
-	
-	private String getSpaces(int indent, int indentFactor) {
-		String spaces = "";
-		for(int i = 0; i < indent * indentFactor; i++) {
-			spaces += " ";
-		}
-		return spaces;
 	}
 	
 }
