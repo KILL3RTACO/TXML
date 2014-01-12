@@ -9,8 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Class containing utility methods
+ * @author KILL3RTACO
+ *
+ */
 public class TXML {
 	
+	/** The default indent factor **/
 	public static final int			INDENT_FACTOR	= 2;
 	
 	/** The Character '&amp;'. */
@@ -65,11 +71,16 @@ public class TXML {
 		}
 	}
 	
-	public static String stringFromStream(InputStream stream) throws FileNotFoundException {
+	/**
+	 * Get the contents from an InputStream
+	 * @param stream The stream to read
+	 * @return The contents of the stream
+	 */
+	public static String stringFromStream(InputStream stream) {
 		String source = "";
 		Scanner x = new Scanner(stream);
-		while (x.hasNext()) {
-			source += x.next() + " ";
+		while (x.hasNextLine()) {
+			source += x.nextLine() + " \n";
 		}
 		source = source.trim();
 		x.close();
@@ -90,16 +101,8 @@ public class TXML {
 		return spaces;
 	}
 	
-	//newja, newjo = newNode
-	//ja = nodes
+	//copied from org.json.JSONML and modified as needed.
 	private static Object parseNode(XMLTokener x, XMLNode node) {
-		String attribute;
-		char c;
-		int i;
-		XMLNode newNode = null;
-		Object token;
-		String tagName = null;
-		
 // Test for and skip past these forms:
 //      <!-- ... -->
 //      <![  ... ]]>
@@ -110,7 +113,7 @@ public class TXML {
 			if(!x.more()) {
 				throw x.syntaxError("Bad XML");
 			}
-			token = x.nextContent();
+			Object token = x.nextContent();
 			if(token == TXML.LT) {
 				token = x.nextToken();
 				if(token instanceof Character) {
@@ -132,7 +135,7 @@ public class TXML {
 						
 // <!
 						
-						c = x.next();
+						char c = x.next();
 						if(c == '-') {
 							if(x.next() == '-') {
 								x.skipPast("-->");
@@ -148,7 +151,7 @@ public class TXML {
 								throw x.syntaxError("Expected 'CDATA['");
 							}
 						} else {
-							i = 1;
+							int i = 1;
 							do {
 								token = x.nextMeta();
 								if(token == null) {
@@ -175,8 +178,8 @@ public class TXML {
 					if(!(token instanceof String)) {
 						throw x.syntaxError("Bad tagName '" + token + "'.");
 					}
-					tagName = (String) token;
-					newNode = new XMLNode(tagName);
+					String tagName = (String) token;
+					XMLNode newNode = new XMLNode(tagName);
 //					newja = new JSONArray();
 //					newjo = new JSONObject();
 //					if(arrayForm) {
@@ -192,6 +195,9 @@ public class TXML {
 //					}
 					//TODO marker
 					if(node != null) {
+						if(node.hasText()) {
+							throw x.syntaxError("Nodes cannot contain text and nodes");
+						}
 						node.addNode(newNode);
 					}
 					
@@ -209,7 +215,7 @@ public class TXML {
 						
 // attribute = value
 						
-						attribute = (String) token;
+						String attribute = (String) token;
 //						if(!arrayForm && ("tagName".equals(attribute) || "childNode".equals(attribute))) {
 //							throw x.syntaxError("Reserved attribute.");
 //						}
@@ -274,6 +280,9 @@ public class TXML {
 				}
 			} else {
 				if(node != null) {
+					if(node.hasNodes()) {
+						throw x.syntaxError("XMLNodes cannot contain text and nodes");
+					}
 					node.setText(token.toString());
 				}
 			}
@@ -281,22 +290,46 @@ public class TXML {
 		
 	}
 	
+	/**
+	 * Get a list of nodes using an XMLTokener
+	 * @param x The XMLTokener to use
+	 * @return A list of nodes
+	 */
 	public static List<XMLNode> parseXML(XMLTokener x) {
 		List<XMLNode> nodes = new ArrayList<XMLNode>();
-		while (x.more()) {
-			nodes.add((XMLNode) parseNode(x, null));
+		while (true) {
+			if(x.more()) {
+				nodes.add((XMLNode) parseNode(x, null));
+			} else {
+				break;
+			}
 		}
 		return nodes;
 	}
 	
+	/**
+	 * Get a list of nodes from a source string
+	 * @param source The string to read from
+	 * @return a list of nodes
+	 */
 	public static List<XMLNode> parseXML(String source) {
 		return parseXML(new XMLTokener(source));
 	}
 	
+	/**
+	 * Get a list of nodes from a stream
+	 * @param source The stream to read
+	 * @return a list of nodes
+	 */
 	public static List<XMLNode> parseXML(InputStream source) {
-		return parseXML(new XMLTokener(source));
+		return parseXML(new XMLTokener(stringFromStream(source)));
 	}
 	
+	/**
+	 * Get a list of nodes from a Reader
+	 * @param source the reader to read from
+	 * @return a list of nodes
+	 */
 	public static List<XMLNode> parseXML(Reader source) {
 		return parseXML(new XMLTokener(source));
 	}

@@ -63,6 +63,10 @@ public class XMLNode extends XMLContainer {
 		_text = "";
 	}
 	
+	/**
+	 * Add a node to this node
+	 * @throws TXMLException if this node contains text
+	 */
 	public XMLNode addNode(XMLNode node) {
 		if(hasText()) {
 			throw new TXMLException("Can only add nodes if the node does not contain any text");
@@ -87,10 +91,19 @@ public class XMLNode extends XMLContainer {
 		return _attributes;
 	}
 	
+	/**
+	 * Get the text contained within this node
+	 * @return the text contained within this node
+	 */
 	public String text() {
 		return _text;
 	}
 	
+	/**
+	 * Set the text contained within this node
+	 * @param text The text to set
+	 * @return this
+	 */
 	public XMLNode setText(String text) {
 		if(!isEmpty()) {
 			throw new TXMLException("Can only set text of any empty node");
@@ -104,6 +117,10 @@ public class XMLNode extends XMLContainer {
 		return this;
 	}
 	
+	/**
+	 * Check if this node contains any text
+	 * @return true if and only if {@code getText().isEmpty()}
+	 */
 	public boolean hasText() {
 		return !_text.isEmpty();
 	}
@@ -229,7 +246,10 @@ public class XMLNode extends XMLContainer {
 		return this;
 	}
 	
-	@Override
+	/**
+	 * Get whether this node ends itself or not (ex. <rt bleep="bloop"/>)
+	 * @return Whether this node ends itself or not
+	 */
 	public boolean isSelfEnding() {
 		return _selfEnding;
 	}
@@ -261,7 +281,7 @@ public class XMLNode extends XMLContainer {
 			return str + _text + "</" + _name + ">";
 		}
 		for(XMLNode n : _nodes) {
-			str += n.toString(++indent, indentFactor) + nl;
+			str += n.toString(indent + 1, indentFactor) + nl;
 		}
 		if(!se) {
 			str += spaces + "</" + _name + ">";

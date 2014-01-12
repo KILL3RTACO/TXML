@@ -67,6 +67,14 @@ public abstract class XMLContainer {
 	}
 	
 	/**
+	 * Returns whether this XMLContainer contains any nodes or not
+	 * @return true if this container has nodes
+	 */
+	public boolean hasNodes() {
+		return !_nodes.isEmpty();
+	}
+	
+	/**
 	 * Get a list of top-level nodes in this conatiner.
 	 * @return The nodes in this container.
 	 */

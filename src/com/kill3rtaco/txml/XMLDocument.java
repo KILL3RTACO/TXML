@@ -22,7 +22,7 @@ public class XMLDocument extends XMLContainer {
 	}
 	
 	/**
-	 * Reads and parses an XML document from a file.
+	 * Constructs an XMLDocument from a file
 	 * @param file The file to read from
 	 * @throws FileNotFoundException If the file was not found
 	 */
@@ -30,10 +30,18 @@ public class XMLDocument extends XMLContainer {
 		this(new FileInputStream(file));
 	}
 	
+	/**
+	 * Construct an XMLDocument from an InputStream
+	 * @param stream The stream to read from
+	 */
 	public XMLDocument(InputStream stream) {
-		this(TXML.parseXML(stream));
+		this(TXML.stringFromStream(stream));
 	}
 	
+	/**
+	 * Construct an XMLDocument from a source string
+	 * @param source The source string to use
+	 */
 	public XMLDocument(String source) {
 		this(TXML.parseXML(source));
 	}
