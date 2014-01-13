@@ -1,7 +1,6 @@
 package com.kill3rtaco.txml;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -86,21 +85,10 @@ public abstract class XMLContainer {
 	 * Get a list of top-level nodes in this container with the given attributes.
 	 * @param attributes The attributes to test for.
 	 * @param strict If true, nodes must have all the attributes given to return true, otherwise nodes
-	 * may have one of any of the nodes given.
+	 * may have one of any of the attributes given.
 	 * @return A list of XMLNodes
 	 */
-	public List<XMLNode> getNodesWithAtrributes(String[] attributes, boolean strict) {
-		return getNodesWithAttributes(Arrays.asList(attributes), strict);
-	}
-	
-	/**
-	 * Get a list of top-level nodes in this container with the given attributes.
-	 * @param attributes The attributes to test for.
-	 * @param strict If true, nodes must have all the attributes given to return true, otherwise nodes
-	 * may have one of any of the nodes given.
-	 * @return A list of XMLNodes
-	 */
-	public List<XMLNode> getNodesWithAttributes(List<String> attributes, boolean strict) {
+	public List<XMLNode> getNodes(List<String> attributes, boolean strict) {
 		List<XMLNode> list = new ArrayList<XMLNode>();
 		for(XMLNode n : _nodes) {
 			if(n.hasAttributes(attributes, strict)) {
@@ -110,21 +98,83 @@ public abstract class XMLContainer {
 		return list;
 	}
 	
+	public List<XMLNode> getNodes(Map<String, String> attributes, boolean strict) {
+		List<XMLNode> list = new ArrayList<XMLNode>();
+		for(XMLNode n : _nodes) {
+			if(n.hasAttributes(attributes, strict)) {
+				list.add(n);
+			}
+		}
+		return list;
+	}
+	
+	public XMLNode removeFirst(String name) {
+		if(isEmpty()) {
+			return null;
+		} else {
+			List<XMLNode> nodes = getNodes(name);
+			if(nodes.isEmpty()) {
+				return null;
+			}
+			XMLNode n = nodes.get(0);
+			_nodes.remove(n);
+			return n;
+		}
+	}
+	
+	public List<XMLNode> removeAll(String name) {
+		return removeAll(newList(name));
+	}
+	
+	public List<XMLNode> removeAll(List<String> names) {
+		List<XMLNode> removed = getNodes(names);
+		for(XMLNode n : removed) {
+			_nodes.remove(n);
+		}
+		return removed;
+	}
+	
+	public List<XMLNode> removeAll(String name, List<String> attributes, boolean strict) {
+		return removeAll(newList(name), attributes, strict);
+	}
+	
+	public List<XMLNode> removeAll(List<String> names, List<String> attributes, boolean strict) {
+		List<XMLNode> removed = getNodes(names, attributes, strict);
+		for(XMLNode n : removed) {
+			_nodes.remove(n);
+		}
+		return removed;
+	}
+	
+	public List<XMLNode> removeAll(String name, Map<String, String> attributes, boolean strict) {
+		return removeAll(newList(name), attributes, strict);
+	}
+	
+	public List<XMLNode> removeAll(List<String> names, Map<String, String> attributes, boolean strict) {
+		List<XMLNode> removed = getNodes(names, attributes, strict);
+		for(XMLNode n : removed) {
+			_nodes.remove(n);
+		}
+		return removed;
+	}
+	
 	/**
 	 * Get a list of top-level nodes whose name {@code equals()} the given name.
 	 * @param name The name to look for.
 	 * @return a list of top-level nodes whose name equal the given name.
 	 */
 	public List<XMLNode> getNodes(String name) {
-		return getNodes(new String[]{name});
+		List<String> names = new ArrayList<String>();
+		names.add(name);
+		return getNodes(names);
 	}
 	
 	/**
 	 * Get a list of top-level nodes whose name {@code equals()} of the given names.
-	 * @param name The names to look for.
+	 * @param names The names to look for.
 	 * @return a list of top-level nodes whose name equal any of the given names.
 	 */
-	public List<XMLNode> getNodes(String[] names) {
+	public List<XMLNode> getNodes(List<String> names) {
 		List<XMLNode> list = new ArrayList<XMLNode>();
 		for(XMLNode n : _nodes) {
 			for(String s : names) {
@@ -135,6 +185,36 @@ public abstract class XMLContainer {
 			}
 		}
 		return list;
+	}
+	
+	public List<XMLNode> getNodes(String name, List<String> attributes, boolean strict) {
+		return getNodes(newList(name), attributes, strict);
+	}
+	
+	public List<XMLNode> getNodes(List<String> names, List<String> attributes, boolean strict) {
+		List<XMLNode> list = getNodes(names);
+		List<XMLNode> nodes = new ArrayList<XMLNode>();
+		for(XMLNode n : list) {
+			if(n.hasAttributes(attributes, strict)) {
+				nodes.add(n);
+			}
+		}
+		return nodes;
+	}
+	
+	public List<XMLNode> getNodes(String name, Map<String, String> attributes, boolean strict) {
+		return getNodes(newList(name), attributes, strict);
+	}
+	
+	public List<XMLNode> getNodes(List<String> names, Map<String, String> attributes, boolean strict) {
+		List<XMLNode> list = getNodes(names);
+		List<XMLNode> nodes = new ArrayList<XMLNode>();
+		for(XMLNode n : list) {
+			if(n.hasAttributes(attributes, strict)) {
+				nodes.add(n);
+			}
+		}
+		return nodes;
 	}
 	
 	/**
@@ -162,5 +242,13 @@ public abstract class XMLContainer {
 	 */
 	public int size() {
 		return _nodes.size();
+	}
+	
+	protected <T extends Object> List<T> newList(T... elements) {
+		List<T> list = new ArrayList<T>();
+		for(T e : elements) {
+			list.add(e);
+		}
+		return list;
 	}
 }

@@ -70,6 +70,17 @@ public class AttributeMap {
 	}
 	
 	/**
+	 * Removes a value from this AttributeMap
+	 * @param key The key to be removed, along with its value
+	 * @return The value that was removed
+	 */
+	public String remove(String key) {
+		int index = _keys.indexOf(key);
+		_keys.remove(index);
+		return _values.remove(index);
+	}
+	
+	/**
 	 * Test if this AttributeMap contains the given key
 	 * @param key The key to test for
 	 * @return true of this AttributeMap contains the given key

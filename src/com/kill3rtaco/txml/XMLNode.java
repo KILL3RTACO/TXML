@@ -1,7 +1,6 @@
 package com.kill3rtaco.txml;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,17 +140,6 @@ public class XMLNode extends XMLContainer {
 	 * may have one of any of the nodes given.
 	 * @return whether this node has the given attributes or not.
 	 */
-	public boolean hasAttributes(String[] attrs, boolean strict) {
-		return hasAttributes(Arrays.asList(attrs), strict);
-	}
-	
-	/**
-	 * Test whether this node has the given attributes or not.
-	 * @param attrs The attributes to test for.
-	 * @param strict If true, this node must have all the attributes given to return true, otherwise this node
-	 * may have one of any of the nodes given.
-	 * @return whether this node has the given attributes or not.
-	 */
 	public boolean hasAttributes(List<String> attrs, boolean strict) {
 		for(String a : attrs) {
 			if(strict) {
@@ -162,6 +150,28 @@ public class XMLNode extends XMLContainer {
 				}
 			} else {
 				if(hasAttribute(a)) {
+					break;
+				}
+			}
+		}
+		return true;
+	}
+	
+	public boolean hasAttribute(String attribute, String value) {
+		return _attributes.get(attribute).equals(value);
+	}
+	
+	public boolean hasAttributes(Map<String, String> attributes, boolean strict) {
+		for(String k : attributes.keySet()) {
+			String v = attributes.get(k);
+			if(strict) {
+				if(getAttribute(k).equals(v)) {
+					continue;
+				} else {
+					return false;
+				}
+			} else {
+				if(getAttribute(k).equals(v)) {
 					break;
 				}
 			}
@@ -246,6 +256,10 @@ public class XMLNode extends XMLContainer {
 		return this;
 	}
 	
+	public String getAttribute(String attribute) {
+		return _attributes.get(attribute);
+	}
+	
 	/**
 	 * Get whether this node ends itself or not (ex. <rt bleep="bloop"/>)
 	 * @return Whether this node ends itself or not
@@ -254,14 +268,33 @@ public class XMLNode extends XMLContainer {
 		return _selfEnding;
 	}
 	
+	/**
+	 * Convert this XMLNode to a String using the default indentFactor (TXML.INDENT_FACTOR).
+	 * 
+	 * The indentFactor is how many spaces to use every indent.
+	 * @return this as a String
+	 */
 	public String toString() {
 		return toString(TXML.INDENT_FACTOR);
 	}
 	
+	/**
+	 * Convert this XMLNode to a String using the given indentFactor.
+	 * 
+	 * @param indentFactor How many spaces to indent every indent
+	 * @return this as a String
+	 */
 	public String toString(int indentFactor) {
 		return toString(0, indentFactor);
 	}
 	
+	/**
+	 * Convert this XMLNode to a String using the given indent and indentFactor.
+	 * 
+	 * @param indent How many times to indent
+	 * @param indentFactor How many spaces to use every indent
+	 * @return this as a string
+	 */
 	public String toString(int indent, int indentFactor) {
 		if(indentFactor < 0) {
 			indentFactor = 0;

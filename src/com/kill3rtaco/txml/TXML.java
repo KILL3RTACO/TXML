@@ -3,14 +3,17 @@ package com.kill3rtaco.txml;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 /**
- * Class containing utility methods
+ * Class containing utility methods and fields
  * @author KILL3RTACO
  *
  */
@@ -332,5 +335,17 @@ public class TXML {
 	 */
 	public static List<XMLNode> parseXML(Reader source) {
 		return parseXML(new XMLTokener(source));
+	}
+	
+	public static void main(String[] args) {
+		try {
+			URL url = new URL("");
+			url.openStream();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

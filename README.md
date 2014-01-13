@@ -1,4 +1,3 @@
-TXML
-====
+# TXML
 
-A simple XML parser. Can read as well as write XML files
+A simple XML parser. Can read, manipulate, and write XML.

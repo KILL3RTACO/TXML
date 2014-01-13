@@ -59,10 +59,22 @@ public class XMLDocument extends XMLContainer {
 		return false;
 	}
 	
+	/**
+	 * Convert this XMLDocument to a String using the default indentFactor (TXML.INDENT_FACTOR).
+	 * 
+	 * The indentFactor is how many spaces to use every indent.
+	 * @return this as a string
+	 */
 	public String toString() {
 		return toString(TXML.INDENT_FACTOR);
 	}
 	
+	/**
+	 * Convert this XMLDocument to a String using the given indentFactor.
+	 * 
+	 * @param indentFactor How many spaces to use every indent
+	 * @return this as a string
+	 */
 	public String toString(int indentFactor) {
 		if(indentFactor < 0) {
 			indentFactor = 0;
