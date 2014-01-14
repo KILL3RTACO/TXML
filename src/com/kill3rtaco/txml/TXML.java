@@ -3,17 +3,32 @@ package com.kill3rtaco.txml;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/*
+ * TXML
+ * Copyright (c) 2014 Caleb Downs, aka KILL3RTACO 
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /**
- * Class containing utility methods and fields
+ * Class containing utility methods and fields for TXML
  * @author KILL3RTACO
  *
  */
@@ -50,6 +65,7 @@ public class TXML {
 	public static final Character	SLASH			= new Character('/');
 	
 	/** Puncuation characters*/
+	// \\\\ = \\ (java) = \ (regex)
 	public static final String		PUNC			= "!\"#$%&'()*+,./\\\\:;<=>?@\\^_`{|}~-";
 	
 	private TXML() {
@@ -142,12 +158,13 @@ public class TXML {
 						if(c == '-') {
 							if(x.next() == '-') {
 								x.skipPast("-->");
+								//skip
 							} else {
 								x.back();
 							}
-						} else if(c == '[') {
+						} else if(c == '[') { //<![
 							token = x.nextToken();
-							if(token.equals("CDATA") && x.next() == '[') {
+							if(token.equals("CDATA") && x.next() == '[') { //<![CDATA[
 								x.nextCDATA();
 								//skip
 							} else {
@@ -171,6 +188,7 @@ public class TXML {
 // <?
 						
 						x.skipPast("?>");
+						//skip
 					} else {
 						throw x.syntaxError("Misshaped tag");
 					}
@@ -196,7 +214,6 @@ public class TXML {
 //							ja.put(newjo);
 //						}
 //					}
-					//TODO marker
 					if(node != null) {
 						if(node.hasText()) {
 							throw x.syntaxError("Nodes cannot contain text and nodes");
@@ -273,7 +290,6 @@ public class TXML {
 //							if(!arrayForm && newja.length() > 0) {
 //								newjo.put("childNodes", newja);
 //							}
-							
 							if(node == null) {
 								return newNode;
 							}
@@ -300,12 +316,8 @@ public class TXML {
 	 */
 	public static List<XMLNode> parseXML(XMLTokener x) {
 		List<XMLNode> nodes = new ArrayList<XMLNode>();
-		while (true) {
-			if(x.more()) {
-				nodes.add((XMLNode) parseNode(x, null));
-			} else {
-				break;
-			}
+		while (x.more()) {
+			nodes.add((XMLNode) parseNode(x, null));
 		}
 		return nodes;
 	}
@@ -335,17 +347,5 @@ public class TXML {
 	 */
 	public static List<XMLNode> parseXML(Reader source) {
 		return parseXML(new XMLTokener(source));
-	}
-	
-	public static void main(String[] args) {
-		try {
-			URL url = new URL("");
-			url.openStream();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 }

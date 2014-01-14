@@ -6,12 +6,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/*
+ * TXML
+ * Copyright (c) 2014 Caleb Downs, aka KILL3RTACO 
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /**
  * Represents an ordered list of key and value pairs
  * @author KILL3RTACO
  *
  */
-public class AttributeMap {
+public class AttributeMap implements Cloneable {
 	
 	private List<String>	_keys, _values;
 	
@@ -31,6 +49,11 @@ public class AttributeMap {
 	public AttributeMap(Map<String, String> map) {
 		this();
 		putAll(map);
+	}
+	
+	public AttributeMap(List<String> keys, List<String> values) {
+		this();
+		putAll(keys, values);
 	}
 	
 	/**
@@ -142,6 +165,31 @@ public class AttributeMap {
 			map.put(s, get(s));
 		}
 		return map;
+	}
+	
+	/**
+	 * Create a indentical clone of this AttributeMap
+	 */
+	public AttributeMap clone() {
+		List<String> keys = new ArrayList<String>();
+		List<String> values = new ArrayList<String>();
+		for(String k : _keys) {
+			keys.add(k);
+			values.add(get(k));
+		}
+		return new AttributeMap(keys, values);
+	}
+	
+	/**
+	 * Return the String representation of this AttributeMap. Key and value pairs are represented by the string
+	 * {@code key="value"}
+	 */
+	public String toString() {
+		String str = "";
+		for(String k : _keys) {
+			str += k + "=\"" + get(k) + "\" ";
+		}
+		return str.trim();
 	}
 	
 }

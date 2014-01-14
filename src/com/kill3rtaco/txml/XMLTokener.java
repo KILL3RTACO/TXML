@@ -565,13 +565,14 @@ public class XMLTokener {
 		}
 	}
 	
-	/**
-	 * Skip characters until past the requested string.
-	 * If it is not found, we are left at the end of the source with a result of false.
-	 * @param to A string to skip past.
-	 * @throws TXMLException
-	 */
-	public boolean skipPast(String to) throws TXMLException {
+//	/**
+//	 * Skip characters until past the requested string.
+//	 * If it is not found, we are left at the end of the source with a result of false.
+//	 * @param to A string to skip past.
+//	 * @throws TXMLException
+//	 */
+	//return content till given point
+	public String skipPast(String to) throws TXMLException {
 		boolean b;
 		char c;
 		int i;
@@ -579,6 +580,8 @@ public class XMLTokener {
 		int offset = 0;
 		int length = to.length();
 		char[] circle = new char[length];
+		
+		String content = "";
 		
 		/*
 		 * First fill the circle buffer with as many characters as are in the
@@ -588,8 +591,9 @@ public class XMLTokener {
 		for(i = 0; i < length; i += 1) {
 			c = next();
 			if(c == 0) {
-				return false;
+				return content;
 			}
+			content += c;
 			circle[i] = c;
 		}
 		
@@ -615,15 +619,16 @@ public class XMLTokener {
 			/* If we exit the loop with b intact, then victory is ours. */
 			
 			if(b) {
-				return true;
+				return content;
 			}
 			
 			/* Get the next character. If there isn't one, then defeat is ours. */
 			
 			c = next();
 			if(c == 0) {
-				return false;
+				return content;
 			}
+			content += c;
 			/*
 			 * Shove the character in the circle buffer and advance the
 			 * circle offset. The offset is mod n.

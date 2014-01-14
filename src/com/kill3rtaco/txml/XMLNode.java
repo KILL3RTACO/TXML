@@ -5,6 +5,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/*
+ * TXML
+ * Copyright (c) 2014 Caleb Downs, aka KILL3RTACO 
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /**
  * Represents an XML node. {@link XMLNode}s hold attribute values as well as other {@link XMLNode}s.
  * @author KILL3RTACO
@@ -14,8 +32,15 @@ public class XMLNode extends XMLContainer {
 	
 	protected String		_name;
 	protected AttributeMap	_attributes;
-	protected boolean		_selfEnding	= false;
+	protected boolean		_selfEnding;
 	protected String		_text;
+	
+	protected XMLNode() {
+		_name = null;
+		_attributes = null;
+		_selfEnding = true;
+		_text = null;
+	}
 	
 	/**
 	 * Creates a new {@link XMLNode}
@@ -31,7 +56,7 @@ public class XMLNode extends XMLContainer {
 	 * Creates a new {@link XMLNode}. 
 	 * @param name The name of the node. For instance, in the XMLNode representing {@code <node bleep="bloop"/>},
 	 * the name would be 'node'
-	 * @param attributes A map of attributes for the node, cannot be null
+	 * @param attributes A map of attributes for the node
 	 * @throws TXMLException If the given name is invalid for any reason
 	 */
 	public XMLNode(String name, Map<String, String> attributes) {
@@ -41,36 +66,54 @@ public class XMLNode extends XMLContainer {
 	/**
 	 * Creates a new {@link XMLNode}. 
 	 * @param name The name of the node. For instance, in the XMLNode representing {@code <node bleep="bloop"/>},
+	 * the name would be 'node'
+	 * @param attributes An AttributeMap of attributes for the node
+	 * @throws TXMLException If the given name is invalid for any reason
+	 */
+	public XMLNode(String name, AttributeMap attributes) {
+		this(name, attributes, new ArrayList<XMLNode>());
+	}
+	
+	/**
+	 * Creates a new {@link XMLNode}. 
+	 * @param name The name of the node. For instance, in the XMLNode representing {@code <node bleep="bloop"/>},
 	 * the name would be 'node'. Cannot be null or empty
-	 * @param attributes A map of attributes for the node, cannot be null
-	 * @param nodes A list of nodes contained within this node
+	 * @param attributes A map of attributes for the node
+	 * @param nodes A list of nodes to be contained within this node
 	 * @throws TXMLException If the given name is invalid for any reason
 	 */
 	public XMLNode(String name, Map<String, String> attributes, List<XMLNode> nodes) {
+		this(name, new AttributeMap(attributes), nodes);
+	}
+	
+	/**
+	 * Creates a new {@link XMLNode}. 
+	 * @param name The name of the node. For instance, in the XMLNode representing {@code <node bleep="bloop"/>},
+	 * the name would be 'node'. Cannot be null or empty
+	 * @param attributes An AttributeMap of attributes for the node
+	 * @param nodes A list of nodes to be contained within this node
+	 * @throws TXMLException If the given name is invalid for any reason
+	 * @param nodes
+	 */
+	public XMLNode(String name, AttributeMap attributes, List<XMLNode> nodes) {
+		this(name, attributes, nodes, false);
+	}
+	
+	protected XMLNode(String name, AttributeMap attributes, List<XMLNode> nodes, boolean selfEnding) {
 		super();
 		setName(name);
 		if(attributes == null) {
 			_attributes = new AttributeMap();
 		} else {
-			_attributes = new AttributeMap(attributes);
+			_attributes = attributes;
 		}
-		if(nodes == null) {
+		if(nodes == null || _selfEnding) {
 			_nodes = new ArrayList<XMLNode>();
 		} else {
 			_nodes = nodes;
 		}
+		_selfEnding = selfEnding;
 		_text = "";
-	}
-	
-	/**
-	 * Add a node to this node
-	 * @throws TXMLException if this node contains text
-	 */
-	public XMLNode addNode(XMLNode node) {
-		if(hasText()) {
-			throw new TXMLException("Can only add nodes if the node does not contain any text");
-		}
-		return super.addNode(node);
 	}
 	
 	/**
@@ -157,10 +200,25 @@ public class XMLNode extends XMLContainer {
 		return true;
 	}
 	
+	/**
+	 * Test whether or not this node has the given attribute/value pair
+	 * @param attribute The attribute to test
+	 * @param value The value of the attribute to test
+	 * @return true if this node has the attribute value pair
+	 */
 	public boolean hasAttribute(String attribute, String value) {
-		return _attributes.get(attribute).equals(value);
+		if(hasAttribute(attribute)) {
+			return getAttribute(attribute).equals(value);
+		}
+		return false;
 	}
 	
+	/**
+	 * Test whether this node has the given attribute/value pairs
+	 * @param attributes
+	 * @param strict
+	 * @return
+	 */
 	public boolean hasAttributes(Map<String, String> attributes, boolean strict) {
 		for(String k : attributes.keySet()) {
 			String v = attributes.get(k);
@@ -191,9 +249,9 @@ public class XMLNode extends XMLContainer {
 		} else if(name.matches("[0-9" + TXML.PUNC + "](.+)?")) {
 			throw new TXMLException("Name '" + name + "'is invalid,"
 					+ " names of nodes cannot start with numbers or puncuation characters");
-		} else if(name.toString().toUpperCase().startsWith("XML")) {
-			throw new TXMLException("Name '" + name + "'is invalid,"
-					+ " names of nodes cannot start with the letters 'xml'");
+//		} else if(name.toString().toUpperCase().startsWith("XML")) {
+//			throw new TXMLException("Name '" + name + "'is invalid,"
+//					+ " names of nodes cannot start with the letters 'xml'");
 		} else if(name.contains(" ")) {
 			throw new TXMLException("Name '" + name + "'is invalid,"
 					+ " names of nodes cannot contain spaces");
@@ -204,12 +262,22 @@ public class XMLNode extends XMLContainer {
 	
 	/**
 	 * Set this nodes attributes. This is not the same as {@code setAttributes()}. This method sets the
-	 * {@link Map} of this nodes attributes, so some values may be overwritten or completely removed altogether
+	 * AttributeMap of this nodes attributes, so some values may be overwritten or completely removed altogether
 	 * @param attributes The new attributes
 	 * @return this
 	 */
-	public XMLNode setAttributesMap(Map<String, String> attributes) {
-		_attributes = new AttributeMap(attributes);
+	public XMLNode setAttributeMap(Map<String, String> attrs) {
+		return setAttributeMap(new AttributeMap(attrs));
+	}
+	
+	/**
+	 * Set this nodes attributes. This is not the same as {@code setAttributes()}. This method sets the
+	 * AttributeMap of this nodes attributes, so some values may be overwritten or completely removed altogether
+	 * @param attributes The new attributes
+	 * @return this
+	 */
+	public XMLNode setAttributeMap(AttributeMap attrs) {
+		_attributes = attrs;
 		return this;
 	}
 	
@@ -256,6 +324,11 @@ public class XMLNode extends XMLContainer {
 		return this;
 	}
 	
+	/**
+	 * Get the value of an attribute
+	 * @param attribute The attribute value to get
+	 * @return The value of the given attribute
+	 */
 	public String getAttribute(String attribute) {
 		return _attributes.get(attribute);
 	}
@@ -300,11 +373,8 @@ public class XMLNode extends XMLContainer {
 			indentFactor = 0;
 		}
 		boolean se = isSelfEnding(), addNewLines = indentFactor > 0;
-		String attrs = "", nl = (addNewLines ? "\n" : ""), spaces = TXML.getSpaces(indent, indentFactor);
-		for(String s : _attributes.getKeys()) {
-			attrs += s + "=\"" + _attributes.get(s) + "\" ";
-		}
-		String str = spaces + "<" + (_name + " " + attrs).trim() + (se ? "/" : "") + ">";
+		String nl = (addNewLines ? "\n" : ""), spaces = TXML.getSpaces(indent, indentFactor);
+		String str = spaces + "<" + (_name + " " + _attributes.toString()).trim() + (se ? "/" : "") + ">";
 		if(!se) {
 			if(!hasText()) {
 				str += nl;
@@ -320,6 +390,23 @@ public class XMLNode extends XMLContainer {
 			str += spaces + "</" + _name + ">";
 		}
 		return str;
+	}
+	
+	/**
+	 * Create an identical clone of this XMLNode, such that the fields within this node and the new node are the
+	 * same, but that {@code node == clone} returns false.
+	 */
+	public XMLNode clone() {
+		String name = _name;
+		AttributeMap attrs = _attributes.clone();
+		List<XMLNode> nodes = cloneNodes();
+		XMLNode clone = new XMLNode(name, attrs, nodes);
+		if(hasText()) {
+			clone.setText(_text);
+		} else {
+			clone.setSelfEnding(_selfEnding);
+		}
+		return clone;
 	}
 	
 }
